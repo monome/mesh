@@ -114,9 +114,20 @@ function gridLed() { // monome led commands from client app
 function anything() { // this method catches any input that doesn't match above
 	// use to capture & transmit general OSC messages that don't have to come from grid
 	var args = arrayfromargs(messagename, arguments);
-	post(args + "\n");
-	if(inlet==0) {} // data to recorders
-	else if(inlet==2) {} // data from client app -> forward back to client
+	//post(args + "\n");
+	if(inlet==0) { // data to recorders
+		outlet(2,args); // forward all data straight to client
+		if(gate>0) { // there is an armed recorder
+			outlet(1,"target", gate);
+			if(gridState[gate]==1) outlet(1,"record"); // start the recording if 'armed'
+			outlet(1,args); // send data to recorders
+			gridState[gate] = 2; // set armed cell to 'recording' state
+			ledState[gate] = 15; // turn on led
+		}
+	}
+	else if(inlet==2) { // data from client app -> forward back to client
+		outlet(2,args);
+	}
 }
 
 function rPress(locate,state) { // process the main key data
