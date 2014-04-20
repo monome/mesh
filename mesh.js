@@ -1,120 +1,142 @@
 // mesh: meta-event-recorder
 // nestable recorder with looping
 
-inlets = 1;
-outlets = 1;
+inlets = 2;
+outlets = 3;
 
-var boundX = 8; //current grid view width
-var boundY = 8; //current grid view height
-var maxX = 8; //maximum potential grid width
-var maxY = 8; //maximum potential grid height
-var fixLength = 0; //when true, columns have pre-set length parameters (else, can have custom length)
-var loopLen = 0; //loop length multiplier & boolean flag for any loop key
-var loopClear = 0; // clear flag
+var bx = 8; //current grid view width
+var by = 8; //current grid view height
+var clear = 0; // clear flag
+var gate = -1; // which cell is input data sent to, -1 means none, essentially a 'target' msg to poly~
+var mesh = 1; // current mesh/client active
 
-var mState = new Array(maxX*(maxY-1));
+/*
+gridState: index = x + 8*y
+[0] state:
+	0 = empty
+	1 = armed
+	2 = recording
+	3 = full & stopped
+	4 = full & playing
+ledState: as above
+[0] state:
+	0 = empty
+	5 = armed, full & stopped
+	15 = recording, full & playing
+*/
+var ledState = new Array(64);
+var gridState = new Array(64);
+for(i=0;i<64;i++) {
+	ledState[i] = 0;
+	gridState[i] = 0;
+}
 
-for(i=0;i<maxX*(maxY-1);i++) mState[i] = 0; // initialise all cells to empty state
 
+
+// inside this function, add the 'which app' choice for whether it's the mesh or the client app
 function gridKey(x,y,s) {
-	if(y==0) {
-		// navigation row
-		// functions: loop, clear, clear all, 
-		// 0: loop the cell
-		// 
-		if(x < boundX/2) {
-			// left-half
-			// which key sets the 'loopLen' flag
-			if(s==1) loopLen = 1<<(y+1); // a press sets the loop multiplier to 1,2,4,8 etc
-			else loopLen = 0; // a release sets loopLen to 0.
+	if(mesh == 1) { // mesh is currently active
+		if(y==0 && x==0) {
+			clear = s; // clear button
+			ledState[x+8*y] = clear*15;
 		}
-		else {
-			// right-half
-			// sets 'clear' flag
-			clear = s;
+		else rPress(x+8*y,s); // normal presses to pattern recorders
+	}
+	else { // client app is active
+		outlet(2,"/client/grid/key",x,y,s); // forward osc data to client
+		if(gate>0) { // there is an armed recorder
+			outlet(1,"target", gate, "start"); // start the recording
+			outlet(1,"target", gate, "/client/grid/key",x,y,s); // send data to recorder
+			gridState[gate] = 2; // set armed cell to 'recording' state
+			ledState[gate] = 15; // turn on led
 		}
 	}
-	else {
-		// normal presses to pattern recorders
-		// all patterns have default length
-		rPress((maxX-boundX)/2+x+maxX*(y-1),s); // formats for 0-indexed array of cells
-			// when viewing a smaller portion, displays the middle section
-	}
 }
 
-function sysSize(x,y) {
-	// size of currently connected grid (but not the max possible size)
-	boundX = x;
-	boundY = y;
-}
+function sysSize(x,y) {bx = x; by = y;}
 
-function batchSize(x,y) {
-	// maximum size of meta-grid connected in batch
-	maxX = x;
-	maxY = y;
-}
+function focus(x) {if(x==1) ledDraw();} // redraw the led display when grabbing focus
 
-function focus(x) {
-	// receives 'focus' message from serialosc
-	if(x==1) {
-		// redraw the led display here
-	}
-}
-
-function rPress(locate,state) {
-	// process the main key data
-
-	// if event is in left half & in a full cell, send data out to recorder (outlet1)
-
-	// manage state of each recorder internally and store array of current settings
-	if(loopClear != 0) {
-		// normal press
-		switch(mState[locate]) {
+function rPress(locate,state) { // process the main key data
+	if(clear == 0) { // press to recorders
+		switch(gridState[locate]) { // check the current status of the pressed cell
 			case 0: // currently empty: press arms for recording
-			if(state==1){ 
-				//set onebang
-				outlet(1, "target" locate, "gate" 1); // send gate-open to relevant recorder
-				mState[locate] = 1;
-				outlet(1, "target" locate, "len" loopLen); // send targeted poly a length multiplier, ignore 0 in patcher
+			if(state==1) { 
+				setGate(locate); // set the gate to the new press, deactivate previously gated cell
+				gridState[locate] = 1; // set to armed
+				ledState[locate] = 5; // dim lighting
 			}
-			[break;]
+			break;
 
 			case 1: // armed: press disables recording if nothing yet received
 			if(state==1) {
-				mState[locate] = 0;
+				gate = -1; // as this was an active press to deactivate a cell, all other recorders must be off
+				gridState[locate] = 0; // return to empty
+				ledState[locate] = 0; // turn cell off
 			}
-			[break;]
+			break;
 
-			case 2: // recording: alerted directly from max when list is received.
-				// any press causes the recording to be ended and played back
+			case 2: // recording: any press causes the end of the recording
 			if(state==1) {
-				outlet(1, "target" locate, "end"); // send 'end' to relevant recorder
-				mState[locate] = 5;
+				outlet(1,"target", locate, "end"); // send 'end' to relevant cell
+				gridState[locate] = 3; // change to full&stopped mode
+				ledState[locate] = 5; // dim level to indicate recorder full
 			}
-			[break;]
+			break;
 			
-			case 3: // full-stopped
-			[break;]
+			case 3: // full-stopped: any press starts playback
+			if(state==1) {
+				outlet(1,"target", locate, "start");
+				gridState[locate] = 4; // now full&playback
+				ledState[locate] = 15; // full bright
+			}
+			break;
 
-			case 4: // full-playback: this is called directly from max for set-length recordings when the recording is complete
-			if(loopLen>0) outlet(1, "target" locate, "loop" 0); // turn off loop if holding loop key while retrigger
-			else { // else retrigger playback and re-enter overdub mode
-				outlet(1, "target" locate, "play"); // restart playback
-				mState[locate] = 5; // re-enter overdub
+			case 4: // full-playback: any press retriggers start of playback (could add overdub here?)
+			if(state==1) { // just restart as grid&led state remain the same
+				outlet(1, "target", locate, "start"); // restart playback
 			}
-			[break;]
-			
-			case 5: // full-overdub
-			outlet(1, "target" locate, "gate" 0); // send gate-close to relevant recorder
-			mState[locate] = 4; // go to playback mode
-			[break;]
+			break;
 		}
 	}
-	else if(state==1) {
-		// press while clear is held
+	else if(state==1) { // press while clear is held
+		outlet(1,"target", locate, "clear");
+		setGate(-1);
+		gridState[locate] = 0;
+		ledState[locate] = 0;
 	}
 }
 
+function setGate(locate) {
+	// a new cell has been set to record, so disarm any previously armed cell
+	if(gate>0) { // another cell is currently armed
+		if(gridState[gate]==1) { // if just armed, simply return to empty state
+			gridState[gate] = 0;
+			ledState[gate] = 0;
+		}
+		else { // another cell is currently recording, so end that recording before arming new cell
+			// formally call end process -> see case 3 above
+			gridState[gate] = 3; // set to full & stopped
+			ledState[gate] = 5; // set to dim light
+		}
+	}
+	gate = locate; // then update gate to the newly armed cell
+}
 
+var frame = new Task(ledDraw, this);
+frame.interval = 50; // 20fps redraw
+frame.repeat();
 
+function ledDraw() { // draw the full led array to the grid -> called as a repeating task
+	outlet(0,"/mesh/grid/led/level/map",0,0,ledState);
+}
 
+function return(ix,a,x,y,s) { // all playback data from recorders
+	outlet(2,a,x,y,s); // remove ix and forward to client app for playback
+	outlet(0,"/mesh/grid/led/level/set",ix%8,Math.floor(ix/8),5); // temporarily flash playback cell to low-bright until next frame update
+}
+
+function end(locate) { // if playback has reached the end
+	gridState[locate] = 3;
+	ledState[locate] = 5;
+}
