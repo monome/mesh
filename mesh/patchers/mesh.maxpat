@@ -143,8 +143,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 234.0, 408.0, 25.0, 25.0 ],
-									"presentation_rect" : [ 235.0, 407.0, 0.0, 0.0 ]
+									"patching_rect" : [ 234.0, 408.0, 25.0, 25.0 ]
 								}
 
 							}
@@ -2179,7 +2178,7 @@
 							"architecture" : "x86"
 						}
 ,
-						"rect" : [ 904.0, 44.0, 808.0, 545.0 ],
+						"rect" : [ 872.0, 44.0, 808.0, 545.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 11.0,
@@ -2200,6 +2199,20 @@
 						"tags" : "",
 						"boxes" : [ 							{
 								"box" : 								{
+									"color" : [ 0.4, 0.8, 1.0, 1.0 ],
+									"fontname" : "Andale Mono",
+									"fontsize" : 12.0,
+									"id" : "obj-22",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 0,
+									"patching_rect" : [ 72.0, 354.0, 147.0, 20.0 ],
+									"text" : "s [router]end-poll2"
+								}
+
+							}
+, 							{
+								"box" : 								{
 									"fontname" : "Andale Mono",
 									"fontsize" : 11.0,
 									"frgb" : 0.0,
@@ -2208,7 +2221,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 36.0, 270.0, 163.0, 68.0 ],
+									"patching_rect" : [ 36.0, 270.0, 163.0, 56.0 ],
 									"text" : "/app-update receives prefix of newly opened apps\n-> trigger /poll\n"
 								}
 
@@ -3591,7 +3604,7 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 54.0, 180.0, 219.0, 19.0 ],
+									"patching_rect" : [ 18.0, 180.0, 219.0, 19.0 ],
 									"text" : "ignore the router in the list >"
 								}
 
@@ -3602,11 +3615,11 @@
 									"fontsize" : 11.0,
 									"id" : "obj-4",
 									"maxclass" : "newobj",
-									"numinlets" : 2,
-									"numoutlets" : 2,
-									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 270.0, 180.0, 83.0, 19.0 ],
-									"text" : "route /mesh"
+									"numinlets" : 3,
+									"numoutlets" : 3,
+									"outlettype" : [ "", "", "" ],
+									"patching_rect" : [ 234.0, 180.0, 136.0, 19.0 ],
+									"text" : "route /mesh /client"
 								}
 
 							}
@@ -3822,7 +3835,7 @@
 									"destination" : [ "obj-7", 0 ],
 									"disabled" : 0,
 									"hidden" : 0,
-									"source" : [ "obj-4", 1 ]
+									"source" : [ "obj-4", 2 ]
 								}
 
 							}
@@ -4006,7 +4019,7 @@
 					}
 ,
 					"text" : "autopattr",
-					"varname" : "u557004187"
+					"varname" : "u026000633"
 				}
 
 			}
