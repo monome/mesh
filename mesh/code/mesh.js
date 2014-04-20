@@ -32,13 +32,15 @@ for(i=0;i<64;i++) {
 	gridState[i] = 0;
 }
 
-
-
 // inside this function, add the 'which app' choice for whether it's the mesh or the client app
 function gridKey() {
 	var args = arrayfromargs(arguments); // grab any input and store it in 'args' array
 
-	if(args[0]==(bx-1) && args[1]==0 && keyMode==0) mesh = 1-args[2]; // if top-right & in 'switcher' mode, set mesh state with key
+	if(args[0]==(bx-1) && args[1]==0 && keyMode==0) {
+		mesh = 1-args[2]; // if top-right & in 'switcher' mode, set mesh state with key
+		if(mesh==0) frame.cancel();
+		else frame.repeat();
+	}
 	else if(mesh == 1) { // mesh is currently active
 		if(args[1]==0 && args[0]==0) { // find top-left clear button
 			clear = args[2]; // set clear state to current state of 0 0
@@ -138,8 +140,9 @@ function rPress(locate,state) { // process the main key data
 
 			case 2: // recording: any press causes the end of the recording
 			if(state==1) {
-				outlet(1,"target", locate);
-				outlet(1, "end"); // send 'end' to relevant cell
+				setGate(-1);
+				//outlet(1,"target", locate);
+				//outlet(1, "end"); // send 'end' to relevant cell
 				gridState[locate] = 3; // change to full&stopped mode
 				ledState[locate] = 5; // dim level to indicate recorder full
 			}
