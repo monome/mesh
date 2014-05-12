@@ -2,7 +2,7 @@
 	"name" : "mesh",
 	"version" : 1,
 	"creationdate" : -814191650,
-	"modificationdate" : -814181794,
+	"modificationdate" : -813524650,
 	"viewrect" : [ 25.0, 69.0, 300.0, 500.0 ],
 	"autoorganize" : 1,
 	"hideprojectwindow" : 0,
@@ -17,7 +17,8 @@
 			}
 ,
 			"serialosc.maxpat" : 			{
-				"kind" : "patcher"
+				"kind" : "patcher",
+				"local" : 1
 			}
 ,
 			"mesh~.maxpat" : 			{

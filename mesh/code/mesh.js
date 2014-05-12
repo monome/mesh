@@ -2,14 +2,15 @@
 // nestable recorder with looping
 
 inlets = 3;
-outlets = 3;
+outlets = 4;
 
 var bx = 8; //current grid view width
 var by = 8; //current grid view height
 var clear = 0; // clear flag
 var gate = -1; // which cell is input data sent to, -1 means none, essentially a 'target' msg to poly~
-var mesh = 1; // current mesh/client active
+var mesh = 0; // current mesh/client active
 var keyMode = 1;
+var varBright = 1; // is device varibright compatible
 
 /*
 gridState: index = x + 8*y
@@ -37,8 +38,8 @@ function gridKey() {
 	var args = arrayfromargs(arguments); // grab any input and store it in 'args' array
 
 	if(args[0]==(bx-1) && args[1]==0 && keyMode==0) {
-		mesh = 1-args[2]; // if top-right & in 'switcher' mode, set mesh state with key
-		if(mesh==0) frame.cancel();
+		if(args[2]) mesh = 1-mesh; // if top-right & in 'switcher' mode, swap modes
+		if(mesh==0) { frame.cancel(); refreshClient(); }
 		else frame.repeat();
 	}
 	else if(mesh == 1) { // mesh is currently active
@@ -46,14 +47,14 @@ function gridKey() {
 			clear = args[2]; // set clear state to current state of 0 0
 			ledState[args[0]+8*args[1]] = clear*15; // draw clear led to reflect state
 		}
-		else rPress(args[0]+8*args[1],args[2]); // find cell index & send state to rPress()
+		else if(args[0]<8) rPress(args[0]+8*args[1],args[2]); // find cell index & send state to rPress()
 	}
 	else if(mesh == 0) { // client app is active
-		outlet(2,"/mesh/grid/key",args); // forward osc data to client
+		outlet(2,"/mesh/grid/key",args[0],args[1],args[2]); // forward osc data to client
 		if(gate>0) { // there is an armed recorder
 			outlet(1, "target", gate);
-			outlet(1, "record"); // start the recording
-			outlet(1, "/mesh/grid/key",args); // send data to recorder
+			if(gridState[gate]==1) outlet(1,"record"); // start the recording if 'armed'
+			outlet(1, "/mesh/grid/key",args[0],args[1],args[2]); // send data to recorder
 			gridState[gate] = 2; // set armed cell to 'recording' state
 			ledState[gate] = 15; // turn on led
 		}
@@ -63,7 +64,7 @@ function gridKey() {
 			clear = args[2]; // set clear state to current state of 0 0
 			ledState[args[0]+8*args[1]] = clear*15; // draw clear led to reflect state
 		}
-		else if(args[0]<bx/2) rPress(args[0]+8*args[1],args[2]); // find cell index & send state to rPress()
+		else if(args[0]<8) rPress(args[0]+8*args[1],args[2]); // find cell index & send state to rPress()
 		else if(keyMode == 1) { // right quad, so output & shift left
 			outlet(2,"/mesh/grid/key",args[0]-8,args[1],args[2]); // forward osc data to client minus offset
 			if(gate>0) { // there is an armed recorder
@@ -96,7 +97,9 @@ function end(locate) { // if playback has reached the end
 function swMode(state) { // 0=switch, 1=split
 	// change input to output routing & shift presses
 	keyMode = state;
-	if(keyMode!=0) mesh = -1;
+	if(keyMode!=0) { mesh = -1; frame.repeat(); }
+	else if(mesh==0) { frame.cancel(); refreshClient(); }
+	else if(mesh==1) frame.repeat();
 }
 
 function gridLed() { // monome led commands from client app 
@@ -110,6 +113,8 @@ function gridLed() { // monome led commands from client app
 		}
 	}
 }
+
+function variableB(x) { varBright = x; } // is device varibright compatible
 
 function anything() { // this method catches any input that doesn't match above
 	// use to capture & transmit general OSC messages that don't have to come from grid
@@ -185,6 +190,10 @@ function rPress(locate,state) { // process the main key data
 	}
 }
 
+function refreshClient() { // send a focus message to the client to cause a redraw
+	outlet(3,"bang");
+}
+
 function setGate(locate) {
 	// a new cell has been set to record, so disarm any previously armed cell
 	if(gate>0) { // another cell is currently armed
@@ -207,5 +216,15 @@ frame.interval = 50; // 20fps redraw
 frame.repeat();
 
 function ledDraw() { // draw the full led array to the grid -> called as a repeating task
-	outlet(0,"/mesh/grid/led/level/map",0,0,ledState);
+	if(varBright==1) outlet(0,"/mesh/grid/led/level/map",0,0,ledState); // full grid
+	else { // non-varbright. draw 8 rows of grids
+		var mask = 0;
+		for(y=0;y<8;y++) {
+			for(x=0;x<8;x++) {
+				if(ledState[x+y*8]>3) mask = mask | 1<<x; // if on at all, set to full bright
+				else mask = mask & ~(1<<x); // if off, leave cell off
+			}
+			outlet(0,"/mesh/grid/led/row",0,y,mask);
+		}
+	}
 }

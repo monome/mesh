@@ -31,6 +31,35 @@
 				"box" : 				{
 					"fontname" : "Andale Mono",
 					"fontsize" : 11.0,
+					"id" : "obj-11",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "bang" ],
+					"patching_rect" : [ 18.0, 138.0, 30.0, 19.0 ],
+					"text" : "t b"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"color" : [ 0.8, 0.4, 1.0, 1.0 ],
+					"fontname" : "Andale Mono",
+					"fontsize" : 12.0,
+					"id" : "obj-10",
+					"maxclass" : "newobj",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 18.0, 108.0, 111.0, 20.0 ],
+					"text" : "r [mesh]swmode"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontname" : "Andale Mono",
+					"fontsize" : 11.0,
 					"id" : "obj-6",
 					"maxclass" : "newobj",
 					"numinlets" : 2,
@@ -130,7 +159,7 @@
 					"outlettype" : [ "", "", "", "" ],
 					"patching_rect" : [ 378.0, 276.0, 75.0, 20.0 ],
 					"text" : "autopattr",
-					"varname" : "u238000767"
+					"varname" : "u959002800"
 				}
 
 			}
@@ -3025,7 +3054,7 @@
 					"fontsize" : 12.0,
 					"framecolor" : [ 0.501961, 0.501961, 0.501961, 0.0 ],
 					"id" : "obj-7",
-					"items" : [ "---", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_beams", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_corners", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_gome", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_step", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_flin", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr", ",", "/b_mlr" ],
+					"items" : "---",
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -3088,6 +3117,24 @@
 			}
  ],
 		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-11", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-10", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-7", 0 ],
+					"disabled" : 0,
+					"hidden" : 0,
+					"source" : [ "obj-11", 0 ]
+				}
+
+			}
+, 			{
 				"patchline" : 				{
 					"destination" : [ "obj-6", 0 ],
 					"disabled" : 0,
