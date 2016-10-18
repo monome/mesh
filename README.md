@@ -16,7 +16,7 @@ example gestures can simply be a sequence of presses on the monome grid (either 
 
 ## quickstart
 
-** before starting, you'll need to update to the latest [serialosc](https://github.com/monome/serialosc).** see [setup](http://monome.org/docs/setup/) for installation instructions.
+**before starting, you'll need to update to the latest [serialosc](https://github.com/monome/serialosc).** see [setup](http://monome.org/docs/setup/) for installation instructions.
 
 * open the mesh application
 * select your monome grid in the top serialosc dropdown
